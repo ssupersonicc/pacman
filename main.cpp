@@ -64,8 +64,10 @@ int main() {
             elapsed_time = sf::milliseconds(0);
         }
         DidPacmanEat();
+        DidBotEat();
         DrawBoard(window);
         DrawCharacters(window);
+        CheckEnd(window);
         window.display();
     }
     return 0;

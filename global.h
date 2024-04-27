@@ -10,6 +10,8 @@ extern std::vector<std::vector<int>> board;
 extern const int kCell;
 extern sf::Color dots_color;
 extern const double golden_ratio;
-extern Character* pacman;
+extern Pacman* pacman;
+extern Bot* bot;
+
 
 bool IsAvailableCell(int x, int y);

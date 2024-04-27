@@ -11,7 +11,9 @@ std::vector<std::vector<int>> board;
 const int kCell = 30;
 sf::Color dots_color = sf::Color(247, 220, 111);
 const double golden_ratio = 1.6180339887;
-Character* pacman;
+Pacman* pacman;
+Bot* bot;
+
 
 bool IsAvailableCell(int x, int y) {
     if (board[x][y] == 1 || board[x][y] == 3 || board[x][y] == 7) return true;
