@@ -5,6 +5,7 @@ enum class Direction { LEFT, RIGHT, DOWN, UP, NULL_DIR };
 
 class Character {
    public:
+    bool exist = true;
     void setPosition(int i, int j) {
         i_ = i;
         j_ = j;
@@ -43,7 +44,9 @@ class Pacman : public Character {
         j_ = j;
     }
     void move();
-    void eat_dot() { score_ += 10; }
+    void set_speed(double s) { speed_ = s; }
+    double get_speed() { return speed_; }
+    void eat_dot(int i) { score_ += 10 * i; }
     int get_score() { return score_; }
     void set_texture_open(std::string up, std::string down, std::string left, std::string right) {
         texture_up_open_ = "img/" + up + ".png";
@@ -57,6 +60,7 @@ class Pacman : public Character {
     sf::Time elapsed_time_;
     sf::Clock clock_;
     int score_ = 0;
+    double speed_ = 1.0;
 };
 
 class Bot : public Character {
@@ -66,13 +70,29 @@ class Bot : public Character {
         j_ = j;
     }
     void move();
-    void eat_dot() { score_ += 10; }
+    void eat_dot(int i) { score_ += 10 * i; }
     int get_score() { return score_; }
+    void setType(int type) { type_ = type; }
+
+   private:
+    int type_ = -1;
+    int score_ = 0;
+};
+
+class Ghost : public Character {
+   public:
+    Ghost() = default;
+    Ghost(int i, int j) {
+        i_ = i;
+        j_ = j;
+    }
+    void move();
+    void set_next(int x, int y) {
+        next_x_ = x;
+        next_y_ = y;
+    }
 
    private:
     int type_ = 1;
-    int score_ = 0;
-    sf::Time elapsed_time_;
-    sf::Clock clock_;
-    int time_ = -1;
+    int next_x_ = -1, next_y_ = -1;
 };

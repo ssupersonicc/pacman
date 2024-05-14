@@ -2,8 +2,6 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
-#include "global.h"
-
 class Object {
    public:
     Object() = default;
@@ -78,6 +76,7 @@ class Circle : public Object {
 
 class Text : public Object {
    public:
+    Text() = default;
     Text(double x, double y, std::string text, double size) {
         x_ = x;
         y_ = y;
@@ -105,16 +104,64 @@ class Text : public Object {
     }
 
    private:
-    double x_, y_, size_;
+    double size_;
     std::string text_, font_name_;
 };
 
-Line CreateLine(double x, double y, double length, double width = 2.0,
-                double angle = 0.0, sf::Color color = sf::Color::Blue);
+class Button {
+   public:
+    Button() = default;
+    Button(double x, double y, double width, double height) {
+        x_ = x;
+        y_ = y;
+        width_ = width;
+        height_ = height;
+    }
+    void setData(double x, double y, double width, double height) {
+        x_ = x;
+        y_ = y;
+        width_ = width;
+        height_ = height;
+    }
+    void draw(sf::RenderWindow &window);
+    void setText(std::string text, int size, int dx, sf::Color color = sf::Color::Black) {
+        double x = x_ + (width_ - text.length() * (int)(size / 1.6180339887)) / 2.0 - dx;
+        double y = y_ + (height_ - size) / 2.0;
+        text_.setPosition(x, y);
+        text_.setSize(size);
+        text_.setText(text);
+        text_.setColor(color);
+        text_.setFont("emulogic.ttf");
+    }
+    void setColors(sf::Color color1, sf::Color color2) {
+        color_not_clicked_ = color2;
+        color_clicked_ = color1;
+        color_ = color_not_clicked_;
+    }
+    bool isClicked(sf::Event event);
+    void clicked() {
+        is_active_ = true;
+        color_ = color_clicked_;
+    }
+    void notClicked() {
+        is_active_ = false;
+        color_ = color_not_clicked_;
+    }
+    bool isActive() { return is_active_; }
 
-Circle CreateCircle(double x, double y, double rad,
-                    sf::Color color = dots_color);
+   protected:
+    double x_, y_;
+    double width_, height_;
+    sf::Color color_not_clicked_, color_clicked_, color_;
+    Text text_;
+    bool is_active_ = false;
+};
 
-Text CreateText(double x, double y, std::string content, double size,
-                std::string font_name, sf::Color color = sf::Color::White);
+Line CreateLine(double x, double y, double length, double width = 2.0, double angle = 0.0,
+                sf::Color color = sf::Color::Blue);
+
+Circle CreateCircle(double x, double y, double rad, sf::Color color = sf::Color(247, 220, 111));
+
+Text CreateText(double x, double y, std::string content, double size, std::string font_name,
+                sf::Color color = sf::Color::White);
 void DrawObject(Object &&, sf::RenderWindow &);

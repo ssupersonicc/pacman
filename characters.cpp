@@ -1,6 +1,7 @@
 #include "characters.h"
 
 #include <SFML/Graphics.hpp>
+#include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <random>
@@ -54,13 +55,14 @@ void Pacman::move() {
 
     if (direction_ == Direction::UP && i_ > 0 && IsAvailableCell(i_ - 1, j_)) {
         ++delta_;
-    } else if (direction_ == Direction::RIGHT && j_ + 1 < board[0].size() &&
-               IsAvailableCell(i_, j_ + 1)) {
+    } else if (direction_ == Direction::RIGHT &&
+               (j_ + 1 < board[0].size() && IsAvailableCell(i_, j_ + 1) || IsPortal(i_, j_))) {
         ++delta_;
     } else if (direction_ == Direction::DOWN &&
                i_ + 1 < board.size() & IsAvailableCell(i_ + 1, j_)) {
         ++delta_;
-    } else if (direction_ == Direction::LEFT && j_ > 0 && IsAvailableCell(i_, j_ - 1)) {
+    } else if (direction_ == Direction::LEFT &&
+               (j_ > 0 && IsAvailableCell(i_, j_ - 1) || IsPortal(i_, j_))) {
         ++delta_;
     } else {
         direction_ = Direction::NULL_DIR;
@@ -71,6 +73,8 @@ void Pacman::move() {
         if (direction_ == Direction::RIGHT) ++j_;
         if (direction_ == Direction::DOWN) ++i_;
         if (direction_ == Direction::LEFT) --j_;
+        if (j_ < 0) j_ = board[0].size() - 1;
+        if (j_ > board[0].size() - 1) j_ = 0;
         delta_ = 0;
     }
 
@@ -128,7 +132,7 @@ void Bot::move() {
             }
             if (s.size() != 0) {
                 int num = mt() % s.size();
-                for (auto i : s){
+                for (auto i : s) {
                     if (num == 0) {
                         num = i;
                         break;
@@ -202,5 +206,68 @@ void Bot::move() {
         texture_name_ = texture_down_;
     } else if (direction_ == Direction::LEFT) {
         texture_name_ = texture_left_;
+    }
+}
+
+void Ghost::move() {
+    if (type_ == 1 && delta_ == 0) {
+        if (next_x_ == i_ && next_y_ == j_) {
+            next_x_ = mt() % board.size();
+            next_y_ = mt() % board[0].size();
+            while (!IsAvailableCell(next_x_, next_y_)) {
+                next_x_ = mt() % board.size();
+                next_y_ = mt() % board[0].size();
+            }
+        }
+        std::vector<std::vector<int>> d = dist({next_x_, next_y_});
+        std::vector<std::pair<int, int>> dir;
+        if (i_ - 1 >= 0 && IsAvailableCell(i_ - 1, j_)) dir.push_back({d[i_ - 1][j_], 0});
+        if (j_ + 1 < board[0].size() && IsAvailableCell(i_, j_ + 1))
+            dir.push_back({d[i_][j_ + 1], 1});
+        if (i_ + 1 < board.size() && IsAvailableCell(i_ + 1, j_))
+            dir.push_back({d[i_ + 1][j_], 2});
+        if (j_ - 1 >= 0 && IsAvailableCell(i_, j_ - 1)) dir.push_back({d[i_][j_ - 1], 3});
+
+        std::sort(dir.begin(), dir.end());
+        if (dir[0].second == 0)
+            direction_ = Direction::UP;
+        else if (dir[0].second == 1)
+            direction_ = Direction::RIGHT;
+        else if (dir[0].second == 2)
+            direction_ = Direction::DOWN;
+        else
+            direction_ = Direction::LEFT;
+
+        if (direction_ == Direction::UP) {
+            texture_name_ = texture_up_;
+        } else if (direction_ == Direction::RIGHT) {
+            texture_name_ = texture_right_;
+        } else if (direction_ == Direction::DOWN) {
+            texture_name_ = texture_down_;
+        } else if (direction_ == Direction::LEFT) {
+            texture_name_ = texture_left_;
+        }
+    }
+
+    if (direction_ == Direction::UP && i_ > 0 && IsAvailableCell(i_ - 1, j_)) {
+        ++delta_;
+    } else if (direction_ == Direction::RIGHT && j_ + 1 < board[0].size() &&
+               IsAvailableCell(i_, j_ + 1)) {
+        ++delta_;
+    } else if (direction_ == Direction::DOWN &&
+               i_ + 1 < board.size() & IsAvailableCell(i_ + 1, j_)) {
+        ++delta_;
+    } else if (direction_ == Direction::LEFT && j_ > 0 && IsAvailableCell(i_, j_ - 1)) {
+        ++delta_;
+    } else {
+        direction_ = Direction::NULL_DIR;
+        texture_name_ = texture_default_;
+    }
+    if (delta_ % kCell == 0) {
+        if (direction_ == Direction::UP) --i_;
+        if (direction_ == Direction::RIGHT) ++j_;
+        if (direction_ == Direction::DOWN) ++i_;
+        if (direction_ == Direction::LEFT) --j_;
+        delta_ = 0;
     }
 }

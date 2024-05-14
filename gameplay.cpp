@@ -2,9 +2,12 @@
 
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <queue>
 
 #include "global.h"
 #include "gui.h"
+
+const int inf = INT32_MAX;
 
 void CreateCharacters() {
     for (int i = 0; i < board.size(); ++i) {
@@ -23,11 +26,15 @@ void CreateCharacters() {
                 bot->setDirection(Direction::LEFT);
                 board[i][j] = 3;
             }
+            if (board[i][j] == 0 && i > 0 && board[i - 1][j] == 4) {
+                pink = new Ghost(i, j);
+                pink->set_textures("pink_left", "pink_up", "pink_down", "pink_right", "pink_left");
+                pink->set_next(i, j);
+            }
         }
     }
 }
 
-// add or 7
 void EventProcessing(sf::Event &event) {
     if (event.type == sf::Event::KeyPressed) {
         Direction direction = Direction::NULL_DIR;
@@ -47,23 +54,27 @@ void EventProcessing(sf::Event &event) {
 }
 
 void DrawCharacters(sf::RenderWindow &window) {
-    pacman->draw(window);
-    bot->draw(window);
+    if (pacman->exist) pacman->draw(window);
+    if (bot->exist) bot->draw(window);
+    pink->draw(window);
 }
 
 void UpdateCharactersPosition() {
-    pacman->move();
-    bot->move();
+    if (pacman->exist) pacman->move();
+    if (bot->exist) bot->move();
 }
 
 void DidPacmanEat() {
     int delta = pacman->getDelta();
     if (delta == 0) {
         auto position = pacman->getPosition();
-        if (dots[position]) {
+        if (dots.count(position)) {
+            if (board[position.first][position.second] == 7) {
+                pacman->set_speed(1.5);
+            }
+            pacman->eat_dot(1);
             dots.erase(position);
             board[position.first][position.second] = 3;
-            pacman->eat_dot();
         }
     }
 }
@@ -72,10 +83,10 @@ void DidBotEat() {
     int delta = bot->getDelta();
     if (delta == 0) {
         auto position = bot->getPosition();
-        if (dots[position]) {
+        if (dots.count(position)) {
+            bot->eat_dot(1);
             dots.erase(position);
             board[position.first][position.second] = 3;
-            bot->eat_dot();
         }
     }
 }
@@ -141,10 +152,116 @@ void UpdateDirection(Direction direction, Character *ch) {
     }
 }
 
-void CheckEnd(){
-    if (dots.size() == 0){
-        if (pacman->get_score() > bot->get_score()){
-            
+void PrintWin(sf::RenderWindow &window) {
+    double width = board[0].size() * 30;
+    double height = board.size() * 30;
+    std::string result = "YOU WON!";
+    int len = result.length();
+    double r = 50.0;
+    int x = (width - len * (r / golden_ratio)) / 2.0 - 100;
+    int y = (height - r) / 2.0;
+    DrawObject(CreateText(x, y, result, r, "emulogic.ttf", sf::Color::Yellow), window);
+}
+
+void PrintLose(sf::RenderWindow &window) {
+    double width = board[0].size() * 30;
+    double height = board.size() * 30;
+    std::string result = "YOU LOST!";
+    int len = result.length();
+    double r = 50.0;
+    int x = (width - len * (r / golden_ratio)) / 2.0 - 100;
+    int y = (height - r) / 2.0;
+    DrawObject(CreateText(x, y, result, r, "emulogic.ttf", sf::Color::Yellow), window);
+}
+
+bool CheckEnd(sf::RenderWindow &window) {
+    // std::cout << dots.size() << '\n';
+    if (pacman->get_score() > bot->get_score() && dots.size() == 0) {
+        PrintWin(window);
+        return true;
+    } else if (dots.size() == 0 && pacman->get_score() <= bot->get_score()) {
+        PrintLose(window);
+        return true;
+    } else if (!pacman->exist && !bot->exist) {
+        if (pacman->get_score() > bot->get_score()) {
+            PrintWin(window);
+        } else {
+            PrintLose(window);
         }
+        return true;
+    } else if (!pacman->exist) {
+        PrintLose(window);
+    }
+    return false;
+}
+
+std::vector<std::vector<int>> dist(std::pair<int, int> f) {
+    int a = f.first;
+    int b = f.second;
+    std::vector<std::vector<int>> d(board.size(), std::vector<int>(board[0].size(), inf));
+    d[a][b] = 0;
+    std::queue<std::pair<int, int>> q;
+    q.push({a, b});
+    while (!q.empty()) {
+        auto t = q.front();
+        q.pop();
+        std::vector<std::pair<int, int>> temp;
+        if (t.first + 1 < board.size() && IsAvailableCell(t.first + 1, t.second))
+            temp.push_back({t.first + 1, t.second});
+        if (t.first - 1 >= 0 && IsAvailableCell(t.first - 1, t.second))
+            temp.push_back({t.first - 1, t.second});
+        if (t.second + 1 < board[0].size() && IsAvailableCell(t.first, t.second + 1))
+            temp.push_back({t.first, t.second + 1});
+        if (t.second - 1 >= 0 && IsAvailableCell(t.first, t.second - 1))
+            temp.push_back({t.first, t.second - 1});
+        for (int i = 0; i < temp.size(); ++i) {
+            auto s = temp[i];
+            if (d[s.first][s.second] > d[t.first][t.second] + 1) {
+                d[s.first][s.second] = d[t.first][t.second] + 1;
+                q.push(s);
+            }
+        }
+    }
+    return std::move(d);
+}
+
+bool CheckCrash(sf::RenderWindow &window) {
+    auto pos_pink = pink->getPosition();
+    auto pos_pacman = pacman->getPosition();
+    auto pos_bot = bot->getPosition();
+    if (pos_pacman == pos_pink) {
+        pacman->exist = false;
+        CheckEnd(window);
+        return true;
+    } else if (pos_bot == pos_pink) {
+        bot->exist = false;
+        CheckEnd(window);
+        auto pos = bot->getPosition();
+        dots.insert({pos.first, pos.second});
+        board[pos.first][pos.second] = 7;
+        bot->setPosition(-1, -1);
+    }
+    return false;
+}
+
+void EventButtons(sf::Event &event) {
+    if (random_button.isClicked(event) && !play_button.isActive()){
+        random_button.clicked();
+        smart_button.notClicked();
+        bot->setType(1);
+    }
+    if (smart_button.isClicked(event) && !play_button.isActive()){
+        smart_button.clicked();
+        random_button.notClicked();
+        bot->setType(2);
+    }
+    if (play_button.isClicked(event)){
+        if (smart_button.isActive() || random_button.isActive()){
+            play_button.clicked();
+        }
+    }
+    if (new_game_button.isClicked(event) && play_button.isActive()){
+        play_button.notClicked();
+        new_game_button.clicked();
     }
 }

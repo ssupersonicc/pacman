@@ -21,10 +21,6 @@ void DrawBoard(sf::RenderWindow& window) {
                 DrawObject(
                     CreateCircle(j * kCell + (kCell - 6) / 2, i * kCell + (kCell - 6) / 2, 3),
                     window);
-                dots[{i, j}] = true;
-            }
-            if (board[i][j] == 7) {
-                DrawObject(CreateCircle(j * kCell, i * kCell, 15), window);
             }
             if (board[i][j] == 2) {
                 if (j > 0 && board[i][j - 1] == 2 && i + 1 < board.size() && board[i + 1][j] == 2 &&
@@ -76,6 +72,17 @@ void DrawBoard(sf::RenderWindow& window) {
                 DrawObject(CreateLine(j * kCell, i * kCell + kCell / 2, 30, 5, 0, sf::Color::White),
                            window);
             }
+            if (board[i][j] == 7) {
+                sf::Texture texture;
+                if (texture.loadFromFile("img/cherry.png")) {
+                    sf::Sprite sprite;
+                    sprite.setTexture(texture);
+                    auto size = texture.getSize();
+                    sprite.setScale(sf::Vector2f((double)kCell / size.x, (double)kCell / size.y));
+                    sprite.setPosition(sf::Vector2f(j * kCell, i * kCell));
+                    window.draw(sprite);
+                }
+            }
         }
     }
 
@@ -87,4 +94,21 @@ void DrawBoard(sf::RenderWindow& window) {
         CreateText(kCell * 12, 10 + kCell + 3 + 10, "SCORE " + std::to_string(bot->get_score()),
                    kCell * 0.8, "emulogic.ttf", sf::Color::Red),
         window);
+
+    // BUTTONS
+    random_button.setColors(sf::Color(0, 255, 0), sf::Color(50, 205, 50));
+    random_button.setText("random", 14, 18);
+    random_button.draw(window);
+
+    smart_button.setColors(sf::Color(0, 255, 0), sf::Color(50, 205, 50));
+    smart_button.setText("smart", 14, 18);
+    smart_button.draw(window);
+
+    play_button.setColors(sf::Color(255, 0, 0), sf::Color(139, 0, 0));
+    play_button.setText("PLAY", 28, 25);
+    play_button.draw(window);
+
+    new_game_button.setColors(sf::Color(255, 0, 0), sf::Color(139, 0, 0));
+    new_game_button.setText("new game", 16, 28);
+    new_game_button.draw(window);
 }

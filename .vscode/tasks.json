@@ -9,7 +9,7 @@
                 "-g",
                 "*.cpp",
                 "-o",
-                "main",
+                "${fileDirname}/${fileBasenameNoExtension}",
                 "-lsfml-graphics",
                 "-lsfml-window",
                 "-lsfml-system"
