@@ -96,11 +96,11 @@ void DrawBoard(sf::RenderWindow& window) {
         window);
 
     // BUTTONS
-    random_button.setColors(sf::Color(0, 255, 0), sf::Color(50, 205, 50));
+    random_button.setColors(sf::Color(0, 255, 0), sf::Color(0, 100, 0));
     random_button.setText("random", 14, 18);
     random_button.draw(window);
 
-    smart_button.setColors(sf::Color(0, 255, 0), sf::Color(50, 205, 50));
+    smart_button.setColors(sf::Color(0, 255, 0), sf::Color(0, 100, 0));
     smart_button.setText("smart", 14, 18);
     smart_button.draw(window);
 

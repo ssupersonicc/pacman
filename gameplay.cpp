@@ -24,6 +24,7 @@ void CreateCharacters() {
                 bot = new Bot(i, j);
                 bot->set_textures("bot_left", "bot_up", "bot_down", "bot_right", "bot_left");
                 bot->setDirection(Direction::LEFT);
+                bot->set_next(i, j);
                 board[i][j] = 3;
             }
             if (board[i][j] == 0 && i > 0 && board[i - 1][j] == 4) {
@@ -107,9 +108,7 @@ void UpdateDirection(Direction direction, Character *ch) {
             ch->setNextDirection(Direction::RIGHT);
         }
     } else if (direction == Direction::LEFT && ch->getDirection() != Direction::LEFT) {
-        if (position.second > 0 && (board[position.first][position.second - 1] == 3 ||
-                                    board[position.first][position.second - 1] == 1 ||
-                                    board[position.first][position.second - 1] == 7)) {
+        if (position.second > 0 && IsAvailableCell(position.first, position.second - 1)) {
             if (ch->getDirection() == Direction::UP || ch->getDirection() == Direction::DOWN) {
                 ch->setDelta(0);
             } else if (ch->getDirection() == Direction::RIGHT) {

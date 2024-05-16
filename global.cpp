@@ -32,7 +32,7 @@ bool IsPortal(int x, int y) {
     return false;
 }
 
-Button random_button(kCell * 19.5, 10 + kCell + 3 - kCell * 0.8, 110, 40);
-Button smart_button(kCell * 19.5 + 20 + 110, 10 + kCell + 3 - kCell * 0.8, 110, 40);
+Button random_button(kCell * 18 + 110, kCell + 3 - kCell * 0.8, 160, 40);
+Button smart_button(kCell * 18 + 110, kCell + 3 - kCell * 0.8 + 40 + 10, 160, 40);
 Button play_button((840 - 330) / 2.0, 1080 - 60, 150, 50);
 Button new_game_button((840 - 330) / 2.0 + 150 + 30, 1080 - 60, 150, 50);

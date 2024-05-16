@@ -48,7 +48,7 @@ int main() {
 
     sf::Time elapsed_time_ghost;
     sf::Clock clock_ghost;
-    int time_ghost = 3000;
+    int time_ghost = 4000;
 
     while (window.isOpen()) {
         if (new_game_button.isActive()) {
@@ -89,7 +89,7 @@ int main() {
             if (elapsed_time_ghost > sf::milliseconds(time_ghost / pacman->get_speed())) {
                 pink->move();
                 elapsed_time_ghost = sf::milliseconds(0);
-                time_ghost = 5;
+                time_ghost = 7;
             }
             DidPacmanEat();
             DidBotEat();

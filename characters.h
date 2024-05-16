@@ -73,10 +73,16 @@ class Bot : public Character {
     void eat_dot(int i) { score_ += 10 * i; }
     int get_score() { return score_; }
     void setType(int type) { type_ = type; }
+    void set_next(int x, int y) {
+        next_x_ = x;
+        next_y_ = y;
+    }
 
    private:
     int type_ = -1;
     int score_ = 0;
+    int next_x_, next_y_;
+    int next_ = 0;
 };
 
 class Ghost : public Character {
@@ -95,4 +101,5 @@ class Ghost : public Character {
    private:
     int type_ = 1;
     int next_x_ = -1, next_y_ = -1;
+    int cnt_ = 0;
 };
